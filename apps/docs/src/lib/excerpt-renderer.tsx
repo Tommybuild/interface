@@ -11,19 +11,21 @@ function decodeExcerptEntities(text: string): string {
 
 /**
  * Safely render a Pagefind excerpt by splitting on <mark> tags and building React elements.
- * This prevents HTML injection while preserving the search result highlighting.
+ * This prevents HTML injection (scripts, images, links, forms rendered as plain text)
+ * while preserving the search result highlighting via <mark> elements.
  */
-export function renderExcerpt(excerpt: string): React.ReactNode {
-  const parts = excerpt.split(/(<mark>|<\/mark>)/)
+export function renderExcerpt(excerpt: string | undefined | null): React.ReactNode {
+  if (!excerpt) return null
+  const parts = excerpt.split(/(<mark>|<\/mark>)/i)
   let inMark = false
   const elements: React.ReactNode[] = []
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
 
-    if (part === "<mark>") {
+    if (part.toLowerCase() === "<mark>") {
       inMark = true
-    } else if (part === "</mark>") {
+    } else if (part.toLowerCase() === "</mark>") {
       inMark = false
     } else if (part) {
       const text = decodeExcerptEntities(part)
@@ -37,7 +39,6 @@ export function renderExcerpt(excerpt: string): React.ReactNode {
       } else {
         elements.push(text)
       }
-
     }
   }
 
